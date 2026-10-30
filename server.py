@@ -24,6 +24,7 @@ from inference import get_pipeline
 STATIC_DIR = PROJECT_ROOT / "static"
 TEMPLATES_DIR = PROJECT_ROOT / "templates"
 SAMPLES_DIR = PROJECT_ROOT / "data" / "samples"
+REPORTS_DIR = PROJECT_ROOT / "reports"
 
 
 class FloraVisionHandler(SimpleHTTPRequestHandler):
@@ -68,6 +69,22 @@ class FloraVisionHandler(SimpleHTTPRequestHandler):
                 return
             else:
                 self.send_error(404, "Static file not found")
+                return
+
+        elif path.startswith("/reports/"):
+            rel_path = path[len("/reports/"):]
+            file_path = REPORTS_DIR / rel_path
+            if file_path.exists() and file_path.is_file():
+                content = file_path.read_bytes()
+                mime = "image/png" if file_path.suffix == ".png" else "text/plain"
+                self.send_response(200)
+                self.send_header("Content-Type", mime)
+                self.send_header("Content-Length", str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+                return
+            else:
+                self.send_error(404, "Report file not found")
                 return
 
         elif path == "/api/samples":
