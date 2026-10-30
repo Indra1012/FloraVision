@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FloraVision — Plant Leaf Disease Diagnosis & CV System</title>
+  <link rel="stylesheet" href="/static/css/glass.css">
+</head>
+<body>
+  <!-- Ambient Glass Blobs -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand-badge">
+        <span>🌿</span> Computer Vision Mini Project
+      </div>
+      <h1 class="app-title">FloraVision</h1>
+      <p class="app-subtitle">
+        Upload a leaf image to instantly detect which disease your plant has — powered by deep learning, image segmentation, and Grad-CAM explainability.
+      </p>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+      <!-- Left Column: Upload & Quick Samples -->
+      <div class="left-panel">
+        <div class="glass-card">
+          <!-- Dropzone -->
+          <div class="dropzone" id="dropzone">
+            <div class="dropzone-icon">🍃</div>
+            <div class="dropzone-text">Upload or Drop Leaf Image</div>
+            <div class="dropzone-hint">Supports JPG, PNG, WEBP, BMP</div>
+            <input type="file" id="file-input" accept="image/*">
+          </div>
+
+          <!-- Quick Sample Leaf Selector -->
+          <div class="samples-section">
+            <div class="section-label">⚡ Test with Curated Sample Leaves (9 Plant Species)</div>
+
+            <!-- Plant Name Buttons -->
+            <div class="plant-chips">
+              <button class="plant-btn" data-plant="apple">🍏 Apple</button>
+              <button class="plant-btn" data-plant="pepper">🫑 Pepper</button>
+              <button class="plant-btn" data-plant="cherry">🍒 Cherry</button>
+              <button class="plant-btn" data-plant="corn">🌽 Corn</button>
+              <button class="plant-btn" data-plant="grape">🍇 Grape</button>
+              <button class="plant-btn" data-plant="peach">🍑 Peach</button>
+              <button class="plant-btn" data-plant="potato">🥔 Potato</button>
+              <button class="plant-btn" data-plant="strawberry">🍓 Strawberry</button>
+              <button class="plant-btn" data-plant="tomato">🍅 Tomato</button>
+            </div>
+
+            <!-- Sub-Category Disease Chips (shown when a plant is selected) -->
+            <div class="subcategory-tray" id="subcategory-tray"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Results & Visualizer -->
+      <div class="right-panel">
+        <!-- Loading State -->
+        <div class="glass-card loading-overlay" id="loading-state">
+          <div class="spinner"></div>
+          <div class="loading-text">Analyzing Leaf Morphology...</div>
+          <div class="loading-subtext">Executing classical transforms, lesion segmentation, MobileNetV2 inference & Grad-CAM</div>
+        </div>
+
+        <!-- Initial Placeholder State -->
+        <div class="glass-card" id="empty-state" style="text-align: center; padding: 60px 20px;">
+          <div style="font-size: 54px; margin-bottom: 14px;">🔬</div>
+          <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 6px;">Awaiting Input Leaf</h3>
+          <p style="color: var(--text-secondary); font-size: 14px; max-width: 440px; margin: 0 auto;">
+            Upload any plant leaf photo or select one of the curated samples to run real-time disease classification, lesion surface segmentation, and explainability heatmaps.
+          </p>
+        </div>
+
+        <!-- Results Display -->
+        <div class="glass-card" id="results-card" style="display: none;">
+          <!-- Metric HUD Grid -->
+          <div class="hud-grid">
+            <div class="hud-card">
+              <div class="hud-title">Health Condition</div>
+              <div class="hud-value" id="hud-status">—</div>
+            </div>
+            <div class="hud-card">
+              <div class="hud-title">Affected Leaf Area</div>
+              <div class="hud-value" id="hud-severity">—</div>
+            </div>
+          </div>
+
+          <!-- Diagnosis Banner -->
+          <div class="diagnosis-banner">
+            <div class="diagnosis-header">
+              <span class="plant-tag" id="diag-plant">Crop Type</span>
+              <span class="confidence-rate" id="diag-conf-rate">Top Match</span>
+            </div>
+            <div class="disease-name" id="diag-disease">Diagnosis</div>
+
+            <!-- Top-3 Prediction Bars -->
+            <div class="top-predictions" id="top-predictions-container"></div>
+          </div>
+
+          <!-- Multi-Tab Navigation -->
+          <div class="tabs-nav">
+            <button class="tab-btn active" data-tab="tab-explain">🧠 AI & Grad-CAM</button>
+            <button class="tab-btn" data-tab="tab-seg">🔬 Lesion Segmentation</button>
+            <button class="tab-btn" data-tab="tab-classical">🧪 Classical CV</button>
+          </div>
+
+          <!-- Tab 1: AI & Grad-CAM -->
+          <div class="tab-content" id="tab-explain">
+            <div class="visual-grid">
+              <div class="visual-panel">
+                <div class="visual-panel-title">Original Leaf Input</div>
+                <img id="img-original" class="visual-img" alt="Original">
+              </div>
+              <div class="visual-panel">
+                <div class="visual-panel-title">Grad-CAM Model Attention</div>
+                <img id="img-gradcam" class="visual-img" alt="Grad-CAM">
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 2: Lesion Segmentation -->
+          <div class="tab-content" id="tab-seg" style="display: none;">
+            <div class="visual-grid">
+              <div class="visual-panel">
+                <div class="visual-panel-title">Isolated Leaf Blade</div>
+                <img id="img-leaf-mask" class="visual-img" alt="Leaf Mask">
+              </div>
+              <div class="visual-panel">
+                <div class="visual-panel-title">Isolated Necrotic Lesions</div>
+                <img id="img-disease-mask" class="visual-img" alt="Disease Mask">
+              </div>
+              <div class="visual-panel" style="grid-column: span 2;">
+                <div class="visual-panel-title">Quantitative Lesion Contour Overlay</div>
+                <img id="img-seg-overlay" class="visual-img" style="aspect-ratio: 16/9;" alt="Segmentation Overlay">
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 3: Classical CV Filters -->
+          <div class="tab-content" id="tab-classical" style="display: none;">
+            <div class="visual-grid">
+              <div class="visual-panel">
+                <div class="visual-panel-title">CLAHE Enhanced</div>
+                <img id="img-clahe" class="visual-img" alt="CLAHE">
+              </div>
+              <div class="visual-panel">
+                <div class="visual-panel-title">Canny Edge Margins</div>
+                <img id="img-canny" class="visual-img" alt="Canny">
+              </div>
+              <div class="visual-panel">
+                <div class="visual-panel-title">Sobel Gradient Magnitude</div>
+                <img id="img-sobel" class="visual-img" alt="Sobel">
+              </div>
+              <div class="visual-panel">
+                <div class="visual-panel-title">ORB Invariant Keypoints</div>
+                <img id="img-orb" class="visual-img" alt="ORB Keypoints">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
+

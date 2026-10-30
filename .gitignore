@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments & Caches
+.venv/
+venv/
+env/
+.cache/
+
+# Raw dataset and splits (large image sets)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Keep samples and models so repository works out-of-the-box
+# (models are ~10MB each, well within GitHub's 100MB limit)
+
+# OS & IDE
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
