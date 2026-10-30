@@ -136,7 +136,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  const dropzoneDefault = document.getElementById("dropzone-default");
+  const dropzonePreview = document.getElementById("dropzone-preview");
+  const previewImage = document.getElementById("preview-image");
+  const previewFilename = document.getElementById("preview-filename");
+
+  function showPreview(imageSrc, filenameText) {
+    if (previewImage) previewImage.src = imageSrc;
+    if (previewFilename) previewFilename.textContent = filenameText;
+    if (dropzoneDefault) dropzoneDefault.style.display = "none";
+    if (dropzonePreview) dropzonePreview.style.display = "flex";
+  }
+
   async function handleFileUpload(file) {
+    // Instant local image preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      showPreview(e.target.result, file.name);
+    };
+    reader.readAsDataURL(file);
+
     const formData = new FormData();
     formData.append("file", file);
     await sendAnalysisRequest("/api/analyze", {
@@ -146,6 +165,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function analyzeSampleLeaf(sampleFilename) {
+    const cleanName = sampleFilename
+      .replace("_sample.jpg", "")
+      .replace("___", " — ")
+      .replace(/_/g, " ");
+    
+    // Update preview filename
+    if (previewFilename) previewFilename.textContent = cleanName;
+
     await sendAnalysisRequest(`/api/analyze-sample?filename=${encodeURIComponent(sampleFilename)}`, {
       method: "GET",
     });
@@ -177,6 +204,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const pred = data.prediction;
     const sev = data.severity;
     const vis = data.visualizations;
+
+    // 0. Update Dropzone Box with Leaf Image Preview & Label
+    if (vis && vis.original) {
+      if (dropzoneDefault) dropzoneDefault.style.display = "none";
+      if (dropzonePreview) dropzonePreview.style.display = "flex";
+      if (previewImage) previewImage.src = vis.original;
+      if (previewFilename && (!previewFilename.textContent || previewFilename.textContent === "leaf_image.jpg")) {
+        previewFilename.textContent = `${pred.plant} — ${pred.disease}`;
+      }
+    }
 
     // 1. HUD Cards (Health Condition & Affected Leaf Area)
     const hudStatus = document.getElementById("hud-status");

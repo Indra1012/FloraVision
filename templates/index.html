@@ -31,9 +31,22 @@
         <div class="glass-card">
           <!-- Dropzone -->
           <div class="dropzone" id="dropzone">
-            <div class="dropzone-icon">🍃</div>
-            <div class="dropzone-text">Upload or Drop Leaf Image</div>
-            <div class="dropzone-hint">Supports JPG, PNG, WEBP, BMP</div>
+            <!-- Default Placeholder State -->
+            <div class="dropzone-default" id="dropzone-default">
+              <div class="dropzone-icon">🍃</div>
+              <div class="dropzone-text">Upload or Drop Leaf Image</div>
+              <div class="dropzone-hint">Supports JPG, PNG, WEBP, BMP</div>
+            </div>
+
+            <!-- Image Preview State (shown once an image is uploaded or selected) -->
+            <div class="dropzone-preview" id="dropzone-preview" style="display: none;">
+              <img id="preview-image" src="" alt="Uploaded Leaf Preview" class="preview-img">
+              <div class="preview-info">
+                <span class="preview-filename" id="preview-filename">leaf_image.jpg</span>
+                <span class="preview-badge">↻ Click to Change Image</span>
+              </div>
+            </div>
+
             <input type="file" id="file-input" accept="image/*">
           </div>
 
