@@ -53,36 +53,40 @@ def segment_leaf(img_rgb):
     hsv = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2HSV)
     gray = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
 
-    # 1. Otsu thresholding on grayscale as baseline
-    _, otsu_mask = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    # Plant tissue covers green foliage, yellow chlorosis, brown necrosis, and dark rot
+    mask_plant = cv2.inRange(hsv, (18, 25, 20), (105, 255, 255))
+    mask_brown1 = cv2.inRange(hsv, (0, 25, 20), (25, 255, 220))
+    mask_brown2 = cv2.inRange(hsv, (160, 25, 20), (180, 255, 220))
+    mask_dark = cv2.inRange(hsv, (0, 0, 15), (180, 255, 75))
 
-    # Invert if the leaf turned out black and background white
-    # (Plant leaves typically have higher saturation than neutral background)
-    s_channel = hsv[:, :, 1]
-    _, sat_mask = cv2.threshold(s_channel, 25, 255, cv2.THRESH_BINARY)
+    combined = cv2.bitwise_or(mask_plant, mask_brown1)
+    combined = cv2.bitwise_or(combined, mask_brown2)
+    combined = cv2.bitwise_or(combined, mask_dark)
 
-    # Combine sat_mask and otsu
-    combined_mask = cv2.bitwise_or(otsu_mask, sat_mask)
+    # Morphological closing to seal internal leaf holes and veins, then opening to eliminate noise
+    k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (13, 13))
+    k_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    cleaned = cv2.morphologyEx(combined, cv2.MORPH_CLOSE, k_close, iterations=2)
+    cleaned = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, k_open, iterations=1)
 
-    # Morphological cleaning
-    kernel_small = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    kernel_large = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+    # Find leaf contours and fill
+    total_area = img_rgb.shape[0] * img_rgb.shape[1]
+    cnts, _ = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    leaf_mask = np.zeros_like(cleaned)
+    if cnts:
+        for c in cnts:
+            if cv2.contourArea(c) > 0.03 * total_area:
+                cv2.drawContours(leaf_mask, [c], -1, 255, -1)
 
-    # Remove small specks
-    cleaned = cv2.morphologyEx(combined_mask, cv2.MORPH_OPEN, kernel_small, iterations=2)
-    # Fill internal holes inside the leaf blade
-    cleaned = cv2.morphologyEx(cleaned, cv2.MORPH_CLOSE, kernel_large, iterations=2)
+    # Fallback to Otsu if thresholding found very little (< 5% of image)
+    if np.mean(leaf_mask == 255) < 0.05:
+        _, otsu_mask = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        cnts_otsu, _ = cv2.findContours(otsu_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if cnts_otsu:
+            c_max = max(cnts_otsu, key=cv2.contourArea)
+            cv2.drawContours(leaf_mask, [c_max], -1, 255, -1)
 
-    # Find the largest connected component (the main leaf blade)
-    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(cleaned)
-    if num_labels > 1:
-        # Ignore background label 0
-        largest_label = 1 + np.argmax(stats[1:, cv2.CC_STAT_AREA])
-        leaf_mask = np.where(labels == largest_label, 255, 0).astype(np.uint8)
-    else:
-        leaf_mask = cleaned
-
-    # Apply mask to image
+    # Apply mask to image to create the actual segmented leaf blade
     segmented_leaf = cv2.bitwise_and(img_rgb, img_rgb, mask=leaf_mask)
     return leaf_mask, segmented_leaf
 

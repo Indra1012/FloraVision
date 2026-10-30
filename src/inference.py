@@ -167,7 +167,7 @@ class FloraVisionPipeline:
         b64_original = self.numpy_to_base64(img_rgb)
         b64_gradcam = self.numpy_to_base64(gradcam_overlay)
         b64_seg_overlay = self.numpy_to_base64(segmentation["overlay"])
-        b64_leaf_mask = self.numpy_to_base64(segmentation["leaf_mask"])
+        b64_leaf_mask = self.numpy_to_base64(segmentation["segmented_leaf"])
         b64_disease_mask = self.numpy_to_base64(segmentation["disease_mask"])
         b64_clahe = self.numpy_to_base64(classical["clahe"])
         b64_canny = self.numpy_to_base64(classical["canny"])
