@@ -1,128 +1,132 @@
 # 📊 Project Progress & Milestone Tracker
 
-**Project Name:** Plant Leaf Disease Detection & Segmentation System (FloraVision)  
-**Target CIA:** Labs / Mini Project Practical (20 Marks | CO1 to CO5)  
+**Project Name:** FloraVision — Plant Leaf Disease Detection & Lesion Segmentation System  
+**Category:** Computer Vision Mini Project (20 Marks | CO1 to CO5 Comprehensive)  
+**Repository:** [https://github.com/Indra1012/FloraVision](https://github.com/Indra1012/FloraVision)  
 **Last Updated:** 2026-10-30  
-**Overall Completion:** `100%`
+**Overall Completion:** `100%` ✅
 
 ---
 
 ## 📈 Status Dashboard
 
-| Phase | Description | Syllabus CO | Status | Completion |
-| :---: | :--- | :---: | :---: | :---: |
-| **Phase 0** | Environment Setup & Project Scaffolding | — | 🟢 Completed | 100% |
-| **Phase 1** | Dataset Acquisition & Preprocessing Split | CO1 | 🟢 Completed | 100% |
-| **Phase 2** | Classical Image Processing (Color, Filter, Edges, ORB) | CO1, CO2 | 🟢 Completed | 100% |
-| **Phase 3** | Leaf & Lesion Segmentation, Area % Metric | CO3 | 🟢 Completed | 100% |
-| **Phase 4** | Deep Learning Classification (CNN & MobileNetV2) | CO3, CO4 | 🟢 Completed | 100% |
-| **Phase 5** | Model Interpretability & Grad-CAM Visualizer | CO5 | 🟢 Completed | 100% |
-| **Phase 6** | Robust Upload & In-the-Wild Pipeline | CO1–CO5 | 🟢 Completed | 100% |
-| **Phase 7** | Apple-Style Glassmorphism Web Interface | — | 🟢 Completed | 100% |
-| **Phase 8** | Final Academic Report & Demo Preparation | CO1–CO5 | 🟢 Completed | 100% |
-
-*Legend: ⚪ Pending | 🟡 In Progress | 🟢 Completed | 🔴 Blocked*
+| Phase | Milestone Description | Syllabus CO | Status | Completion | Key Deliverables |
+| :---: | :--- | :---: | :---: | :---: | :--- |
+| **Phase 0** | Environment Setup & Scaffolding | — | 🟢 Completed | 100% | Python 3.13, PyTorch 2.15 CPU, OpenCV 5.0, Scaffolding |
+| **Phase 1** | Multi-Plant Dataset (9 Crops, 33 Classes) | CO1 | 🟢 Completed | 100% | 40K raw images, 6,552 balanced split (70/15/15), 33 sample leaves |
+| **Phase 2** | Classical Image Processing Suite | CO1, CO2 | 🟢 Completed | 100% | RGB $\to$ HSV, CLAHE, Bilateral, Sobel, Canny, ORB keypoints |
+| **Phase 3** | Lesion Segmentation & Severity Metric | CO3 | 🟢 Completed | 100% | Otsu + HSV necrosis masking, % Affected Area formula, contour overlay |
+| **Phase 4** | Deep Learning Models (CNN vs MobileNetV2) | CO3, CO4 | 🟢 Completed | 100% | Baseline CNN (73.98%) vs MobileNetV2 (**96.95%**), confusion matrices |
+| **Phase 5** | Explainable AI via Grad-CAM Heatmaps | CO5 | 🟢 Completed | 100% | Gradient-weighted Class Activation Mapping on MobileNetV2 `features[-1]` |
+| **Phase 6** | Diagnostic Ingestion & Validation Pipeline | CO1–CO5 | 🟢 Completed | 100% | Universal format support (JPG/PNG/WEBP/BMP), normalization, OOD filter |
+| **Phase 7** | Apple-Style Glassmorphism Local Web UI | — | 🟢 Completed | 100% | Translucent blur cards, 9-crop subcategory selector, Top-3 bars, 3 tabs |
+| **Phase 8** | Academic Documentation, PPT & GitHub | CO1–CO5 | 🟢 Completed | 100% | 3 Jupyter notebooks, Viva guide, report, pushed to GitHub repository |
 
 ---
 
-## 📋 Detailed Phased Action Items
+## 📋 Granular Milestone Execution Log
 
 ### ⚙️ Phase 0: Setup & Scaffolding
-- ✅ Create `PROJECT_OVERVIEW.md` with complete architectural and syllabus mapping
-- ✅ Create `PROGRESS.md` progress tracking file
-- ✅ Initialize directory hierarchy (`data/`, `notebooks/`, `src/`, `models/`, `static/`, `templates/`, `reports/`)
-- ✅ Create `requirements.txt` with verified dependency versions
-- ✅ Initialize and test local Python environment with complete scientific stack
-- ✅ Verify CPU/GPU acceleration and OpenCV 5.0 / PyTorch 2.15 installation
+- ✅ Initialized directory hierarchy: `data/`, `notebooks/`, `src/`, `models/`, `static/`, `templates/`, `reports/`, `scripts/`
+- ✅ Created verified `requirements.txt` with PyTorch, Torchvision, OpenCV, Scikit-learn, NumPy, Matplotlib, Pillow
+- ✅ Resolved Windows console encoding (`utf-8` reconfigure) and Matplotlib cache path handling
+- ✅ Created `start.bat` for 1-click desktop launching
 
 ---
 
-### 📂 Phase 1: Dataset Acquisition & Partitioning
-- ✅ Expanded dataset to **9 plant species** (Apple, Bell Pepper, Cherry, Corn, Grape, Peach, Potato, Strawberry, Tomato) with **33 classes**
-- ✅ Automated dataset downloader & sparse-checkout script (40,000 raw images in `data/raw/`)
-- ✅ Balanced train/val/test split (`70% Train: 4,586`, `15% Val: 982`, `15% Test: 984`)
-- ✅ Generated plant species chart (`reports/plant_species_distribution.png`) and 33-class chart (`reports/class_distribution.png`)
-- ✅ Curated sample test images for all 33 classes into `data/samples/`
+### 📂 Phase 1: Multi-Crop Dataset Acquisition & Balanced Partitioning
+- ✅ Downloaded and curated PlantVillage multi-crop dataset covering **9 distinct plant species** across **33 disease and healthy classes**:
+  1. **Apple:** Apple Scab, Black Rot, Cedar Apple Rust, Healthy
+  2. **Bell Pepper:** Bacterial Spot, Healthy
+  3. **Cherry:** Powdery Mildew, Healthy
+  4. **Corn (Maize):** Gray Leaf Spot, Common Rust, Northern Leaf Blight, Healthy
+  5. **Grape:** Black Rot, Esca (Black Measles), Leaf Blight, Healthy
+  6. **Peach:** Bacterial Spot, Healthy
+  7. **Potato:** Early Blight, Late Blight, Healthy
+  8. **Strawberry:** Leaf Scorch, Healthy
+  9. **Tomato:** Bacterial Spot, Early Blight, Late Blight, Leaf Mold, Septoria Leaf Spot, Spider Mites, Target Spot, Mosaic Virus, Yellow Leaf Curl, Healthy
+- ✅ Balanced dataset split with 200 images/class cap:
+  - **Train Set (70%):** 4,586 images
+  - **Validation Set (15%):** 982 images
+  - **Test Set (15%):** 984 images
+  - **Total Balanced:** 6,552 images
+- ✅ Curated 33 dedicated sample leaves in `data/samples/` for instantaneous offline testing
+- ✅ Generated visual charts: `reports/plant_species_distribution.png` and `reports/class_distribution.png`
 
 ---
 
-### 🧪 Phase 2: Classical Image Processing (CO1 & CO2)
-- ✅ Implement color space conversion module (`RGB` $\to$ `Grayscale`, `RGB` $\to$ `HSV`) in `src/classical_processing.py`
-- ✅ Implement histogram equalization (Standard & CLAHE on Luminance channel)
-- ✅ Implement spatial smoothing filters (Gaussian, Median, and edge-preserving Bilateral)
-- ✅ Implement edge detection pipelines (Sobel gradient magnitude & Canny edge detector)
-- ✅ Implement ORB (Oriented FAST and Rotated BRIEF) feature keypoint detector
-- ✅ Generate comparative before/after multi-panel figures for academic report across multiple plant species (`reports/classical_*.png`)
+### 🧪 Phase 2: Classical Image Processing Suite (CO1 & CO2)
+- ✅ Implemented modular pipeline in `src/classical_processing.py`:
+  - **Color conversions:** RGB $\to$ Grayscale, RGB $\to$ HSV (separating Hue for chlorophyll greens vs lesion browns)
+  - **Contrast enhancement:** Contrast Limited Adaptive Histogram Equalization (**CLAHE**) on Luminance channel
+  - **Spatial filtering:** Gaussian blur, Median filter, and edge-preserving Bilateral filtering
+  - **Edge detection:** Sobel horizontal/vertical gradients and Canny multi-stage hysteresis edge detector
+  - **Feature extraction:** ORB (Oriented FAST and Rotated BRIEF) invariant keypoint descriptors
+- ✅ Saved 5 multi-panel comparative figures across crops in `reports/classical_*.png`
 
 ---
 
-### 🔬 Phase 3: Segmentation & Severity Metric (CO3)
-- ✅ Implement leaf-background segmentation mask (Color masking + Otsu thresholding + Morphology) in `src/segmentation.py`
-- ✅ Implement diseased spot isolation (HSV necrosis/chlorosis thresholding)
-- ✅ Calculate quantitative metric: $\text{Affected Area \%} = \frac{\text{Lesion Pixels}}{\text{Leaf Pixels}} \times 100$
-- ✅ Create visual overlay function (neon contours & heat tint highlighting diseased spots on leaf)
-- ✅ Generate multi-plant comparison figures and summary chart (`reports/segmentation_*.png`)
+### 🔬 Phase 3: Lesion Segmentation & Severity Metric (CO3)
+- ✅ Implemented dual-stage segmentation in `src/segmentation.py`:
+  - **Stage 1 (Leaf Mask):** Otsu thresholding combined with saturation masking and morphological cleanup
+  - **Stage 2 (Disease Lesion Mask):** HSV color thresholding isolating necrosis and chlorosis
+- ✅ Implemented quantitative mathematical severity index:
+  $$\text{Affected Leaf Area (\%)} = \frac{\text{Diseased Lesion Pixels}}{\text{Total Leaf Blade Pixels}} \times 100$$
+- ✅ Automated health condition classification:
+  - `Healthy`: $0\%$
+  - `Mild Infection`: $< 10\%$
+  - `Moderate Infection`: $10\% - 25\%$
+  - `Severe Infection`: $> 25\%$
+- ✅ Generated contour overlays with neon boundaries and translucent heat tints (`reports/segmentation_*.png`)
 
 ---
 
 ### 🧠 Phase 4: Deep Learning Classification (CO3 & CO4)
-- ✅ Build dataset loaders with PyTorch data augmentation (flips, affine rotation, color jitter) in `src/train.py`
-- ✅ Develop Baseline Custom CNN (3 conv-pool blocks) in `src/models.py` to demonstrate basic convolution principles (73.98% Test Acc)
-- ✅ Implement Transfer Learning with **MobileNetV2** (Pretrained ImageNet base) in `src/models.py` (96.95% Test Acc)
-- ✅ Train baseline CNN and save model weights (`models/baseline_custom_cnn_best.pth`)
-- ✅ Fine-tune MobileNetV2 and save model weights (`models/mobilenetv2_best.pth`)
-- ✅ Compute metrics: Accuracy, Precision, Recall, F1-Score, Confusion Matrix (`reports/confusion_matrix_*.png`)
-- ✅ Generate comparative performance summary table (Baseline CNN vs MobileNetV2) in `reports/model_comparison_metrics.txt`
+- ✅ Built robust PyTorch training pipeline with data augmentations in `src/train.py`
+- ✅ **Model 1 (Baseline Custom CNN):**
+  - 4 Convolutional blocks (Conv2D $\to$ BatchNorm $\to$ ReLU $\to$ MaxPool) + 2 Linear layers with Dropout (0.5)
+  - **Test Accuracy:** `73.98%` | **Precision:** `74.89%` | **Recall:** `74.04%` | **F1-Score:** `72.58%`
+  - Saved weights: `models/baseline_custom_cnn_best.pth` (10.0 MB)
+- ✅ **Model 2 (MobileNetV2 Transfer Learning):**
+  - Pretrained ImageNet backbone with inverted residuals and depthwise separable convolutions
+  - Customized classifier head: `Dropout(0.2) -> Linear(1280, 33)`
+  - **Test Accuracy:** `96.95%` (+22.97% improvement!) | **Precision:** `97.02%` | **Recall:** `96.97%` | **F1-Score:** `96.96%`
+  - Saved weights: `models/mobilenetv2_best.pth` (11.8 MB)
+- ✅ Computed confusion matrices and saved reports in `reports/confusion_matrix_*.png` and `reports/model_comparison_metrics.txt`
 
 ---
 
-### 🔍 Phase 5: Modern Techniques & Explainability (CO5)
-- ✅ Implement Grad-CAM (Gradient-weighted Class Activation Mapping) on MobileNetV2 in `src/explainability.py`
-- ✅ Generate heatmaps highlighting spatial regions influencing the model's prediction
-- ✅ Build side-by-side visualizer: `[Original Image | Lesion Segmentation | Grad-CAM Heatmap]` saved in `reports/gradcam_*.png`
+### 🔍 Phase 5: Explainability & Model Interpretability (CO5)
+- ✅ Implemented Grad-CAM (Gradient-weighted Class Activation Mapping) in `src/explainability.py`
+- ✅ Hooked into final convolutional layer of MobileNetV2 (`model.features[-1]`)
+- ✅ Generated spatial attention heatmaps proving the AI model focuses on actual necrotic lesions rather than background artifacts (`reports/gradcam_*.png`)
 
 ---
 
-### 🛡️ Phase 6: Robust Upload & In-the-Wild Pipeline
-- ✅ Universal image ingestion supporting `.jpg`, `.jpeg`, `.png`, `.webp`, `.bmp` in `src/inference.py`
-- ✅ Handle alpha channels, grayscale, and ImageNet color normalization
-- ✅ Implement out-of-distribution / non-leaf sanity validation with `< 50%` confidence threshold warning
-- ✅ Curate test sample images for quick offline demonstration across 33 classes in `data/samples/`
+### 🛡️ Phase 6: Diagnostic Pipeline & Ingestion Engine
+- ✅ Unified end-to-end engine in `src/inference.py`: accepts any image format, normalizes channels, runs classification, segmentation, and Grad-CAM
+- ✅ Base64 encoding for instantaneous local browser visualization without disk write overhead
 
 ---
 
-### 🖥️ Phase 7: Apple-Style Glassmorphism Local UI
-- ✅ Build modern Apple Glass UI (`backdrop-filter: blur`, translucent panels, rounded cards) in `static/css/glass.css`
-- ✅ Implement file drag-and-drop zone with instant preview in `templates/index.html` and `static/js/app.js`
-- ✅ Display Top-3 classification results with animated progress bars
-- ✅ Display quantitative metrics card: Health Status, Disease Name, % Leaf Area Affected
-- ✅ Display multi-view visualizer tabs:
-  - Tab 1: AI Prediction & Grad-CAM Heatmap
-  - Tab 2: Segmentation & Disease Contours
-  - Tab 3: Classical Processing (HSV, CLAHE, Canny Edges, Sobel, ORB)
-- ✅ Connect frontend to local backend server (`server.py`) running at `http://127.0.0.1:8000`
+### 🖥️ Phase 7: Apple-Style Glassmorphism Web Interface
+- ✅ Built Apple-inspired design in `static/css/glass.css` with `backdrop-filter: blur(26px)`, ambient glowing gradients, and SF Pro typography
+- ✅ Responsive 2-column layout:
+  - **Left Panel:** Drag-and-drop leaf upload + 9-crop selector with collapsible sub-category disease chips
+  - **Right Panel:** Health Condition HUD, Affected Leaf Area %, Crop & Disease diagnosis banner, animated Top-3 prediction progress bars
+- ✅ Interactive 3-Tab visualizer:
+  - **Tab 1:** Original Leaf vs Grad-CAM Model Attention Heatmap
+  - **Tab 2:** Isolated Leaf Blade, Isolated Necrotic Lesions, Lesion Contour Overlay
+  - **Tab 3:** Classical CV Transforms (CLAHE, Canny, Sobel, ORB Keypoints)
+- ✅ Built zero-dependency local web server (`server.py`) using Python's native `http.server` running on `http://127.0.0.1:8000`
 
 ---
 
-### 📑 Phase 8: Academic Report & Viva Preparation
-- ✅ Generate all high-resolution figures for practical record & mini project report in `reports/`
-- ✅ Formulate Course Outcomes (CO1 to CO5) mapping document in `reports/VIVA_AND_PRACTICAL_RECORD.md`
-- ✅ Prepare comprehensive Viva Voce questions & answers covering classical vs deep learning trade-offs
-- ✅ Create 3 interactive step-by-step academic Jupyter notebooks in `notebooks/`
-
----
-
-## 📝 Activity & Changelog
-
-| Date | Phase | Action Taken | Author / Notes |
-| :---: | :---: | :--- | :--- |
-| **2026-10-30** | Phase 0 | Initialized project repository and created `PROJECT_OVERVIEW.md` detailing full syllabus alignment (CO1–CO5), architecture, and execution plan. | Antigravity |
-| **2026-10-30** | Phase 0 | Created `PROGRESS.md` live tracking dashboard with granular milestones and status metrics. | Antigravity |
-| **2026-10-30** | Phase 1 | Downloaded 18,160 PlantVillage tomato images (10 classes), generated class distribution chart, created balanced train/val/test splits (70/15/15), and curated sample images. | Antigravity |
-| **2026-10-30** | Phase 1 | Expanded to **9 distinct plant species** (Apple, Bell Pepper, Cherry, Corn, Grape, Peach, Potato, Strawberry, Tomato) with **33 classes** (40,000 raw images). Generated species and class distribution charts, and created balanced multi-plant splits (6,552 images: 4,586 train, 982 val, 984 test). | Antigravity |
-| **2026-10-30** | Phase 2 | Implemented modular classical processing pipeline (`src/classical_processing.py`) covering CO1 (RGB to Grayscale, HSV) and CO2 (CLAHE, Bilateral filtering, Sobel/Canny edge detection, ORB keypoints). Generated 5 high-resolution multi-panel academic comparison figures across multiple crops in `reports/`. | Antigravity |
-| **2026-10-30** | Phase 3 | Implemented leaf segmentation and lesion isolation engine (`src/segmentation.py`). Calculated quantitative surface area % affected and health categories. Generated individual crop figures and a multi-crop summary comparison chart (`reports/segmentation_multi_plant_summary.png`). | Antigravity |
-| **2026-10-30** | Phase 4 | Trained Baseline CNN (73.98% Test Acc) and MobileNetV2 Transfer Learning (96.95% Test Acc) across 33 classes. Saved weights and comparative performance table (`reports/model_comparison_metrics.txt`). | Antigravity |
-| **2026-10-30** | Phase 5 | Implemented Grad-CAM explainability module (`src/explainability.py`) and generated attention heatmaps across multiple crops. | Antigravity |
-| **2026-10-30** | Phase 6 & 7 | Developed unified diagnostic pipeline (`src/inference.py`), Apple-Style Glassmorphism UI (`static/css/glass.css`, `templates/index.html`), and launched local server (`server.py`) at `http://127.0.0.1:8000`. | Antigravity |
-| **2026-10-30** | Phase 8 | Generated complete Viva Voce guide (`reports/VIVA_AND_PRACTICAL_RECORD.md`) and 3 interactive academic Jupyter notebooks in `notebooks/`. | Antigravity |
+### 📑 Phase 8: Academic Reports, Presentation Prep & GitHub
+- ✅ Generated comprehensive Academic Project Report in `reports/PROJECT_REPORT.md`
+- ✅ Formulated complete Viva Voce Q&A and Course Outcomes mapping in `reports/VIVA_AND_PRACTICAL_RECORD.md`
+- ✅ Created 3 interactive Jupyter notebooks in `notebooks/`:
+  - `01_classical_processing.ipynb` (CO1, CO2)
+  - `02_segmentation_analysis.ipynb` (CO3)
+  - `03_gradcam_explainability.ipynb` (CO5)
+- ✅ Initialized Git repository, verified `.gitignore`, and pushed complete codebase, models, sample images, and documentation to GitHub at `https://github.com/Indra1012/FloraVision`

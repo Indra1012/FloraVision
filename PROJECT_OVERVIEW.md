@@ -1,155 +1,217 @@
-# 🌿 Plant Leaf Disease Detection & Segmentation System
-### An End-to-End Computer Vision & Deep Learning Pipeline with Apple-Style Glass UI
+# 🌿 FloraVision: Plant Leaf Disease Detection & Lesion Segmentation System
+### An End-to-End Computer Vision & Deep Learning Suite with Apple-Style Glass UI
+
+**Repository:** [https://github.com/Indra1012/FloraVision](https://github.com/Indra1012/FloraVision)  
+**Academic Target:** Computer Vision Mini Project (20 Marks | Comprehensive CO1 to CO5 Coverage)  
+**Status:** 100% Completed  
 
 ---
 
-## 📌 Executive Summary
-This project is an end-to-end Computer Vision system designed for academic evaluation (CIA Labs / Mini Project, 20 Marks, Practical No. 11 covering CO1 to CO5). The system accepts plant leaf images, applies classical image processing techniques, segments diseased lesions to quantify damaged leaf area percentage, classifies leaf health and disease types using a lightweight deep learning architecture (**MobileNetV2** vs baseline CNN), visualizes model decision regions via **Grad-CAM**, and serves the entire pipeline through an **Apple-style Glassmorphism local web UI**.
+## 📌 1. Project Abstract & Motivation
+Agricultural crops frequently suffer from bacterial, fungal, and viral infections that drastically diminish farm yield if not identified early. Traditional agricultural inspection relies on manual visual observation, which is subjective, labor-intensive, and prone to misdiagnosis.
+
+**FloraVision** is a comprehensive, production-grade Computer Vision system engineered to automate the diagnosis and quantitative evaluation of plant diseases across **9 distinct crop species** spanning **33 disease and healthy classes**. The system integrates:
+1. **Classical Image Processing (CO1, CO2):** Color space transformations, CLAHE enhancement, Bilateral filtering, Sobel/Canny edge detection, and ORB invariant keypoint matching.
+2. **Quantitative Lesion Segmentation (CO3):** Dual-stage background subtraction and necrosis isolation to compute the exact mathematical percentage of damaged leaf area ($\text{Severity \%}$).
+3. **Deep Learning Classification (CO3, CO4):** Transfer Learning via **MobileNetV2** achieving **96.95% Test Accuracy**, benchmarked against a custom 4-block Baseline CNN (**73.98% Test Accuracy**).
+4. **Explainable AI (CO5):** **Grad-CAM** attention heatmaps providing visual proof of the spatial features used by the deep learning model.
+5. **Apple-Style Glassmorphism UI:** A sleek, local web interface built with translucent frosted glass, interactive 9-crop expandable disease selector, real-time diagnostic metrics, and multi-tab visualizers.
 
 ---
 
-## 🎯 Syllabus & Course Outcomes (CO) Alignment
+## 🎯 2. Course Outcomes (CO) & Syllabus Mapping
 
-| Unit & Focus | Course Outcome (CO) | Practical Mapping | Implementation in Project |
+| Course Outcome | Academic Concept | Implementation in FloraVision | Output Artifact |
 | :--- | :--- | :--- | :--- |
-| **Unit I: Digital Image Fundamentals** | **CO1:** Understand image acquisition, color spaces, transformations | Practical 2 | RGB to Grayscale, HSV conversion, image resizing, color histogram analysis |
-| **Unit II: Image Enhancement & Filtering** | **CO2:** Apply spatial filtering, edge detection, feature extraction | Practicals 3, 4 | Gaussian/Median smoothing, Histogram Equalization (CLAHE), Sobel & Canny edge detection, ORB keypoint matching |
-| **Unit III: Image Segmentation** | **CO3:** Segment regions of interest & extract morphological features | Practical 5 | Leaf-from-background isolation, K-Means / HSV disease thresholding, lesion contour detection, leaf surface area % affected |
-| **Unit IV: Deep Learning Classification** | **CO4:** Train & evaluate CNN models with transfer learning | Practicals 7, 8 | 1) Baseline custom CNN architecture<br>2) MobileNetV2 Transfer Learning (fine-tuned)<br>Data augmentation, Confusion Matrix, Precision/Recall/F1 |
-| **Unit V: Modern CV & Explainability** | **CO5:** Advanced CV techniques & interpretability | Practical 9 & 11 | **Grad-CAM** (Gradient-weighted Class Activation Mapping) showing heatmaps of infected regions used by the neural network |
+| **CO1: Digital Image Fundamentals** | Color spaces, pixel transforms, image acquisition | RGB to Grayscale, RGB to HSV decomposition, histogram inspection, ImageNet normalization | `reports/classical_*.png`, `src/classical_processing.py` |
+| **CO2: Image Enhancement & Filtering** | Spatial filtering, contrast adjustments, edge detection, feature descriptors | CLAHE contrast enhancement, Gaussian/Median/Bilateral smoothing, Sobel gradients, Canny edge detection, ORB keypoints | `reports/classical_*.png`, Tab 3 in Web UI |
+| **CO3: Image Segmentation & Severity** | Morphological operations, color thresholding, region extraction | Otsu thresholding + saturation masking for leaf isolation, HSV necrosis thresholding, % Affected Area metric | `reports/segmentation_*.png`, Tab 2 in Web UI |
+| **CO4: Deep Learning Classification** | Convolutional Neural Networks, Transfer Learning, Evaluation | Custom 4-block CNN vs fine-tuned **MobileNetV2** (96.95% accuracy), Confusion Matrix, Precision/Recall/F1 | `models/mobilenetv2_best.pth`, `reports/confusion_matrix_*.png` |
+| **CO5: Advanced CV & Explainability** | Model interpretability, feature visualization | **Grad-CAM** hooked into MobileNetV2 `features[-1]`, overlaying attention heatmaps on original leaves | `reports/gradcam_*.png`, Tab 1 in Web UI |
 
 ---
 
-## 🏛️ System Architecture Pipeline
+## 🏛️ 3. End-to-End System Architecture
 
 ```mermaid
 flowchart TD
-    A["Raw Leaf Image (Dataset or Upload: JPG/PNG/WEBP)"] --> B["Phase 6: Ingestion & Validation (Sanity check, Resizing 224x224, Normalization)"]
-    B --> C["Phase 2: Classical Processing (Grayscale, HSV, Filtering, Canny Edges, ORB)"]
-    B --> D["Phase 3: Segmentation Engine (Leaf Masking, Disease Lesion Extraction, % Affected Area)"]
-    B --> E["Phase 4: Deep Learning Inference (MobileNetV2 Transfer Learning vs Custom CNN)"]
-    E --> F["Phase 5: Explainability (Grad-CAM Heatmap Generation)"]
-    C --> G["Phase 7: Glassmorphism Web App"]
-    D --> G
-    E --> G
-    F --> G
-    G --> H["Interactive UI: Predictions, Confidence Bars, Lesion Overlay, Grad-CAM, Health Metrics"]
+    A["Raw Leaf Input (Upload / Curated Sample: JPG, PNG, WEBP, BMP)"] --> B["Unified Ingestion Engine (src/inference.py)"]
+    B --> C["Color Normalization & Resizing (224x224, RGB)"]
+    
+    subgraph Classical["Classical CV Pipeline (CO1 & CO2)"]
+        C --> D1["Color Conversion: RGB to Grayscale & HSV"]
+        C --> D2["CLAHE Contrast Enhancement"]
+        C --> D3["Edge Detectors: Sobel Gradient & Canny"]
+        C --> D4["ORB Invariant Keypoint Extraction"]
+    end
+    
+    subgraph Segmentation["Quantitative Lesion Engine (CO3)"]
+        C --> E1["Otsu + Saturation Leaf Blade Masking"]
+        E1 --> E2["HSV Necrosis Thresholding"]
+        E2 --> E3["Calculate Severity % = (Lesion Pixels / Leaf Pixels) * 100"]
+        E3 --> E4["Generate Neon Contour Overlay"]
+    end
+    
+    subgraph DeepLearning["Deep Learning & Explainability (CO4 & CO5)"]
+        C --> F1["MobileNetV2 Transfer Learning (96.95% Acc)"]
+        F1 --> F2["Top-3 Predicted Classes & Probabilities"]
+        F1 --> F3["Grad-CAM Gradient Engine (features[-1])"]
+        F3 --> F4["Spatial Heatmap Overlay"]
+    end
+    
+    Classical --> G["Apple Glassmorphism UI (http://127.0.0.1:8000)"]
+    Segmentation --> G
+    DeepLearning --> G
+    
+    G --> H["HUD: Health Status + Affected Leaf Area %"]
+    G --> I["Diagnosis Banner + Animated Top-3 Progress Bars"]
+    G --> J["3-Tab Interactive Visualizer (AI & GradCAM | Segmentation | Classical CV)"]
 ```
 
 ---
 
-## 📂 Project Directory Structure
+## 📂 4. Dataset Overview (9 Crops, 33 Classes)
 
-```text
-CV_final_project/
-├── data/                         # Dataset directory
-│   ├── raw/                      # Downloaded PlantVillage subset (e.g., Tomato 5-10 classes)
-│   ├── processed/                # Preprocessed train / val / test splits (70 / 15 / 15)
-│   └── samples/                  # Curated sample test images for quick offline demos
-├── notebooks/                    # Jupyter notebooks for step-by-step academic evaluation
-│   ├── 01_data_exploration.ipynb
-│   ├── 02_classical_processing.ipynb   # CO1, CO2
-│   ├── 03_segmentation_analysis.ipynb   # CO3
-│   ├── 04_cnn_baseline_training.ipynb  # CO4
-│   ├── 05_mobilenet_transfer.ipynb     # CO4
-│   └── 06_gradcam_explainability.ipynb # CO5
-├── src/                          # Production modular python package
-│   ├── __init__.py
-│   ├── config.py                 # Hyperparameters, paths, class labels
-│   ├── preprocessing.py          # Classical transformations, CLAHE, filters, edges
-│   ├── segmentation.py           # Background subtraction, disease spot extraction, area %
-│   ├── dataset.py                # PyTorch/TensorFlow dataset loaders & augmentations
-│   ├── models.py                 # Custom CNN architecture & MobileNetV2 fine-tuning wrapper
-│   ├── explainability.py         # Grad-CAM implementation
-│   └── inference.py              # Unified pipeline: image in -> full analysis output
-├── models/                       # Saved trained weights and metrics
-│   ├── baseline_cnn.pth (or .keras)
-│   ├── mobilenetv2_leaf.pth (or .keras)
-│   └── class_indices.json
-├── static/                       # Web frontend assets (for Glassmorphic UI)
-│   ├── css/
-│   │   └── glass.css             # Apple-style backdrop-filter blur, frost gradients
-│   └── js/
-│       └── app.js                # Asynchronous upload & visualization handlers
-├── templates/                    # HTML templates (if FastAPI/Flask UI)
-│   └── index.html                # Apple glass aesthetic layout
-├── reports/                      # Academic report figures, confusion matrices, CO mapping
-├── app.py                        # Local application server entry point
-├── PROJECT_OVERVIEW.md           # Project architecture and technical specification
-├── PROGRESS.md                   # Phased milestone tracker and log
-└── requirements.txt              # Environment dependencies
-```
+The system utilizes a balanced subset of the academic **PlantVillage Dataset**, spanning **40,000 raw images** filtered and partitioned into **6,552 balanced images** with a 200 images/class cap:
+
+* **Train Set (70%):** 4,586 images
+* **Validation Set (15%):** 982 images
+* **Test Set (15%):** 984 images
+
+### Supported Plant Species and Diseases:
+1. **Apple:** Apple Scab, Black Rot, Cedar Apple Rust, Healthy
+2. **Bell Pepper:** Bacterial Spot, Healthy
+3. **Cherry:** Powdery Mildew, Healthy
+4. **Corn (Maize):** Cercospora Gray Leaf Spot, Common Rust, Northern Leaf Blight, Healthy
+5. **Grape:** Black Rot, Esca (Black Measles), Leaf Blight, Healthy
+6. **Peach:** Bacterial Spot, Healthy
+7. **Potato:** Early Blight, Late Blight, Healthy
+8. **Strawberry:** Leaf Scorch, Healthy
+9. **Tomato:** Bacterial Spot, Early Blight, Late Blight, Leaf Mold, Septoria Leaf Spot, Spider Mites, Target Spot, Mosaic Virus, Yellow Leaf Curl, Healthy
 
 ---
 
-## 🔬 Phase Breakdown & Technical Details
+## 🔬 5. Mathematical & Algorithmic Formulations
 
-### Phase 0: Setup & Environment Initialization ✅ [COMPLETED]
-- Configured scientific stack: OpenCV 5.0, NumPy, Matplotlib, Scikit-learn, Pillow, PyTorch 2.15, Torchvision.
-- Scaffolded modular directory structure (`data/`, `notebooks/`, `src/`, `models/`, `static/`, `templates/`, `reports/`).
+### A. Classical Image Processing
+- **CLAHE (Contrast Limited Adaptive Histogram Equalization):** Prevents over-amplification of noise by clipping histogram counts at threshold $\beta$, redistributing clipped pixels across all bins before CDF mapping.
+- **Sobel Gradient Magnitude:**
+  $$G_x = \begin{bmatrix} -1 & 0 & 1 \\ -2 & 0 & 2 \\ -1 & 0 & 1 \end{bmatrix} * I, \quad G_y = \begin{bmatrix} -1 & -2 & -1 \\ 0 & 0 & 0 \\ 1 & 2 & 1 \end{bmatrix} * I, \quad G = \sqrt{G_x^2 + G_y^2}$$
+- **Canny Edge Detection:** Applies Gaussian smoothing $\to$ Sobel gradients $\to$ Non-maximum suppression along gradient angles $\to$ Hysteresis thresholding with dual thresholds ($T_{\text{low}}, T_{\text{high}}$).
+- **ORB Feature Extraction:** Combines modified FAST keypoint detector with Harris corner orientation measures and rotated BRIEF binary descriptors.
 
-### Phase 1: Dataset Acquisition & Preparation ✅ [COMPLETED]
-- Target Dataset: **PlantVillage Multi-Crop Dataset** covering **9 distinct plant species** across **33 disease and healthy classes** (~40,000 raw images):
-  - **Apple** (Apple Scab, Black Rot, Cedar Apple Rust, Healthy)
-  - **Bell Pepper** (Bacterial Spot, Healthy)
-  - **Cherry** (Powdery Mildew, Healthy)
-  - **Corn / Maize** (Cercospora Leaf Spot, Common Rust, Northern Leaf Blight, Healthy)
-  - **Grape** (Black Rot, Esca Black Measles, Leaf Blight, Healthy)
-  - **Peach** (Bacterial Spot, Healthy)
-  - **Potato** (Early Blight, Late Blight, Healthy)
-  - **Strawberry** (Leaf Scorch, Healthy)
-  - **Tomato** (Bacterial Spot, Early Blight, Late Blight, Leaf Mold, Septoria Leaf Spot, Spider Mites, Target Spot, Mosaic Virus, Yellow Leaf Curl, Healthy)
-- Automated downloader and splitter script to partition data into `train (70%)`, `val (15%)`, `test (15%)`.
-- Class & plant species distribution visualization and balance verification (`reports/plant_species_distribution.png` and `reports/class_distribution.png`).
+### B. Lesion Segmentation & Severity Metric
+- **Leaf Masking:** Combines Otsu's optimal inter-class variance thresholding on luminance with color saturation masking ($S > 30$) to isolate the leaf blade from plain backgrounds.
+- **Lesion Isolation:** Segments necrotic brown patches ($H \in [10, 30], S > 40, V \in [40, 200]$) and chlorotic yellow rings.
+- **Quantitative Severity Index:**
+  $$\text{Affected Leaf Area (\%)} = \frac{\sum_{(x,y)} M_{\text{lesion}}(x, y)}{\sum_{(x,y)} M_{\text{leaf}}(x, y)} \times 100$$
+- **Health Classifications:**
+  - `Healthy`: $0\%$
+  - `Mild Infection`: $< 10\%$
+  - `Moderate Infection`: $10\% - 25\%$
+  - `Severe Infection`: $> 25\%$
 
-### Phase 2: Classical Image Processing (CO1 & CO2) ✅ [COMPLETED]
-- **Color Spaces**: RGB $\rightarrow$ Grayscale, RGB $\rightarrow$ HSV (Hue separation for chlorophyll vs necrosis/lesions).
-- **Enhancement**: Contrast Limited Adaptive Histogram Equalization (**CLAHE**), Bilateral & Gaussian filtering.
-- **Edge Detection**: Sobel directional gradients and Canny edge detector on leaf margins and vein structures.
-- **Feature Matching**: ORB (Oriented FAST and Rotated BRIEF) feature descriptors and keypoints visualization.
-- Generated and saved 5 comprehensive multi-panel academic comparison figures in `reports/classical_*.png`.
+### C. Deep Learning Model Architectures & Results
 
-### Phase 3: Segmentation & Severity Quantification (CO3) ✅ [COMPLETED]
-- **Stage 1 (Leaf Masking)**: Otsu thresholding + Saturation masking + Morphological cleaning to isolate leaf blade from background.
-- **Stage 2 (Lesion Segmentation)**: Color thresholding in HSV space isolating brown/yellow necrotic regions and dark fungal lesions.
-- **Stage 3 (Quantification)**: Computed mathematical surface area percentage affected:
-  $$\text{Disease Severity (\%)} = \frac{\text{Pixel Area of Diseased Lesions}}{\text{Total Pixel Area of Leaf}} \times 100$$
-- **Stage 4 (Visual Overlay)**: Glowing neon contours and translucent heat overlays.
-- Generated individual crop analysis figures and a multi-crop summary comparison chart in `reports/segmentation_multi_plant_summary.png`.
+| Metric | Baseline Custom CNN | MobileNetV2 (Transfer Learning) | Improvement |
+| :--- | :---: | :---: | :---: |
+| **Architecture** | 4 Conv-BN-ReLU-Pool Blocks + 2 FC | Inverted Residuals + Linear Bottlenecks | Modern lightweight CNN |
+| **Pretrained Base** | None (Trained from scratch) | ImageNet-1K pre-trained weights | Rich visual feature representation |
+| **Test Accuracy** | **73.98%** | **96.95%** | **+22.97%** |
+| **Precision (Weighted)** | 74.89% | **97.02%** | **+22.13%** |
+| **Recall (Weighted)** | 74.04% | **96.97%** | **+22.93%** |
+| **F1-Score (Weighted)** | 72.58% | **96.96%** | **+24.38%** |
+| **Model Size** | 10.0 MB | 11.8 MB | Compact, mobile deployable |
 
-### Phase 4: Deep Learning Classification (CO3 & CO4) ✅ [COMPLETED]
-- **Model 1 (Baseline CNN)**: 4 convolutional blocks (Conv2D $\rightarrow$ BatchNorm $\rightarrow$ ReLU $\rightarrow$ MaxPool) followed by Dense layers. Achieved **73.98% Test Accuracy**.
-- **Model 2 (Transfer Learning)**: **MobileNetV2** pre-trained on ImageNet with customized 33-class classification head. Achieved **96.95% Test Accuracy**.
-- **Data Augmentation**: Random horizontal/vertical flips, affine rotations ($\pm 15^\circ$), color jitter.
-- **Evaluation**: Classification Report (Precision: 97.02%, Recall: 96.97%, F1-Score: 96.96%), Confusion Matrix heatmaps, and CNN vs MobileNetV2 comparison table (`reports/model_comparison_metrics.txt`).
+### D. Explainable AI via Grad-CAM
+Grad-CAM computes the importance weight $\alpha_k^c$ for each feature map $A^k$ in the final convolutional layer of MobileNetV2 for target class $c$:
+$$\alpha_k^c = \frac{1}{Z} \sum_{i} \sum_{j} \frac{\partial y^c}{\partial A_{i,j}^k}$$
+The class-discriminative localization map $L_{\text{Grad-CAM}}^c$ is computed via ReLU to isolate features with positive influence:
+$$L_{\text{Grad-CAM}}^c = \text{ReLU}\left(\sum_{k} \alpha_k^c A^k\right)$$
+The resulting map is upscaled to $224 \times 224$ and blended with the input leaf image using a colormap, highlighting the exact infection patches.
 
-### Phase 5: Modern Techniques & Explainability (CO5) ✅ [COMPLETED]
-- **Grad-CAM (Gradient-weighted Class Activation Mapping)**:
-  - Hooks into the final convolutional layer of MobileNetV2 (`features[-1]`).
-  - Computes gradients of the target class score with respect to feature activation maps.
-  - Generates a 2D heatmap overlaid on the leaf, proving the model looks at actual lesions rather than background artifacts (`reports/gradcam_*.png`).
+---
 
-### Phase 6: Ingestion & In-The-Wild Upload Pipeline ✅ [COMPLETED]
-- Universal input handler in `src/inference.py` supporting JPG, PNG with alpha, WEBP, BMP.
-- Automatic channel normalization (stripping alpha channels, converting grayscale to 3-channel RGB).
-- Input sanity verification: Confidence rejection threshold ($< 50\%$ flags out-of-distribution advisory warning).
+## 🖥️ 6. Apple Glassmorphism Web Interface
 
-### Phase 7: Apple-Style Glassmorphism Local UI ✅ [COMPLETED]
-- Modern aesthetic inspired by macOS / iOS design guidelines:
-  - `backdrop-filter: blur(26px) saturate(190%)`
-  - Subtle translucent borders (`1px solid rgba(255, 255, 255, 0.18)`)
-  - Smooth box shadows with natural ambient diffusion
-  - Apple SF Pro / Inter typography
-  - Interactive file dropzone with instant preview
-  - Multi-tab visualizer displaying:
-    1. AI Diagnosis & Grad-CAM Heatmap
-    2. Quantitative Lesion Segmentation & Severity %
-    3. Classical CV Explorer (CLAHE, Sobel, Canny, ORB)
-- Local Web Server running at `http://127.0.0.1:8000` via `server.py`.
+The local web interface (`http://127.0.0.1:8000`) is constructed with Apple macOS/iOS design principles:
+- **Styling:** `backdrop-filter: blur(26px) saturate(190%)`, multi-layer translucent glass cards, and ambient background illumination.
+- **Interactive Selector:** 9 plant buttons (Apple, Pepper, Cherry, Corn, Grape, Peach, Potato, Strawberry, Tomato). Clicking any plant reveals its specific disease sub-categories for 1-click testing.
+- **Top HUD Cards:** Real-time health condition badge (`Severe Infection`, `Mild Infection`, `Healthy`) and affected leaf area percentage.
+- **Diagnosis Banner:** Displays the identified crop type, disease diagnosis, and animated Top-3 prediction progress bars.
+- **3 Visualizer Tabs:**
+  - **Tab 1: AI & Grad-CAM** (Original leaf vs Grad-CAM model attention heatmap)
+  - **Tab 2: Lesion Segmentation** (Isolated leaf blade, isolated necrotic spots, and contour overlay)
+  - **Tab 3: Classical CV** (CLAHE enhancement, Canny edges, Sobel magnitude, and ORB keypoints)
 
-### Phase 8: Academic Report, Viva Prep & Demo Assets ✅ [COMPLETED]
-- Comprehensive Viva voce Q&A document at `reports/VIVA_AND_PRACTICAL_RECORD.md`.
-- Course Outcome (CO1-CO5) mapping matrix for examiner evaluation.
-- 3 interactive academic Jupyter notebooks in `notebooks/` (`01_classical_processing.ipynb`, `02_segmentation_analysis.ipynb`, `03_gradcam_explainability.ipynb`).
-- High-resolution comparison plots saved in `reports/` for the final lab manual/report.
+---
 
+## 📊 7. PPT Presentation Slide-by-Slide Guide
+
+Use this ready-to-present outline for your project PPT slides:
+
+### Slide 1: Title Slide
+- **Title:** FloraVision — Plant Leaf Disease Detection & Lesion Segmentation System
+- **Subtitle:** An End-to-End Computer Vision & Deep Learning Suite (CO1 to CO5)
+- **Author / Presenter:** Mahindra (Indra1012)
+- **Course:** Computer Vision Mini Project (20 Marks)
+
+### Slide 2: Problem Statement & Objectives
+- **Problem:** Crop diseases cause up to 40% yield loss globally; manual identification by farmers is slow, error-prone, and inaccessible.
+- **Objectives:**
+  1. Detect plant disease across multiple species (9 crops, 33 classes).
+  2. Quantify damage severity (% leaf surface affected).
+  3. Ensure explainability via Grad-CAM attention heatmaps.
+  4. Provide a lightweight, intuitive Apple Glass web interface.
+
+### Slide 3: Course Outcomes (CO1 to CO5) Mapping
+- Explain how the project thoroughly covers all 5 syllabus outcomes:
+  - CO1: Image acquisition, color spaces (RGB, HSV, Grayscale)
+  - CO2: Enhancement (CLAHE), filtering (Bilateral), edge detection (Sobel, Canny), ORB keypoints
+  - CO3: Segmentation (Otsu + HSV necrosis masking) and % damaged area calculation
+  - CO4: Deep Learning classification (Custom CNN vs MobileNetV2)
+  - CO5: Explainability (Grad-CAM heatmaps)
+
+### Slide 4: Multi-Crop Dataset (9 Plants, 33 Classes)
+- **Dataset:** PlantVillage subset covering 40,000 raw images.
+- **Balanced Splits:** 6,552 images (Train: 4,586, Val: 982, Test: 984).
+- Show charts from `reports/plant_species_distribution.png` and `reports/class_distribution.png`.
+
+### Slide 5: Classical Image Processing Suite (CO1 & CO2)
+- Highlight color space conversions (RGB $\to$ HSV to separate green healthy tissue from brown necrosis).
+- Show multi-panel figure from `reports/classical_tomato_early_blight.png`:
+  - CLAHE contrast enhancement
+  - Sobel gradient magnitude
+  - Canny edge detection
+  - ORB keypoint matching
+
+### Slide 6: Lesion Segmentation & Severity Quantification (CO3)
+- Explain the 2-stage segmentation pipeline:
+  1. Leaf blade isolation via Otsu thresholding + saturation masking.
+  2. Lesion extraction via HSV color thresholding.
+- Present the Severity formula: $\text{Affected Area \%} = \frac{\text{Lesion Pixels}}{\text{Leaf Pixels}} \times 100$.
+- Show figure from `reports/segmentation_multi_plant_summary.png`.
+
+### Slide 7: Deep Learning Models & Results (CO4)
+- Compare the two architectures:
+  - **Baseline Custom CNN:** 4 conv-pool blocks $\to$ **73.98% Accuracy**
+  - **MobileNetV2 Transfer Learning:** Pretrained ImageNet backbone $\to$ **96.95% Accuracy** (+22.97% boost!)
+- Present the metrics comparison table (Precision: 97.02%, Recall: 96.97%, F1: 96.96%).
+- Show confusion matrix from `reports/confusion_matrix_mobilenetv2.png`.
+
+### Slide 8: Explainable AI via Grad-CAM (CO5)
+- Explain why Grad-CAM is critical: AI must not be a black box in agriculture.
+- Show figure from `reports/gradcam_apple_cedar_rust.png`:
+  - Visual proof that MobileNetV2 activates directly on fungal rust pustules and blight lesions.
+
+### Slide 9: Apple Glassmorphism Web Interface
+- Showcase UI screenshots:
+  - 9-crop selector with collapsible disease sub-categories.
+  - Health condition card & % affected leaf area metric.
+  - Top-3 prediction animated progress bars.
+  - 3-tab visualizer (AI & GradCAM, Segmentation, Classical CV).
+
+### Slide 10: Conclusion, Future Scope & GitHub Repository
+- **Key Achievements:** 96.95% accuracy, multi-plant support, automated quantitative severity, explainable heatmaps, zero-dependency local server.
+- **Future Scope:** Real-time mobile drone integration, multi-leaf field detection using YOLOv8.
+- **GitHub Repository:** [https://github.com/Indra1012/FloraVision](https://github.com/Indra1012/FloraVision)
